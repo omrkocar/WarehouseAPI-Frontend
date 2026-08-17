@@ -1,4 +1,3 @@
-﻿
 // GET /api/Products and GET /api/Products/{id}
 export interface Product {
     id: string;
@@ -6,7 +5,6 @@ export interface Product {
     description: string | null;
     price: number;
     stockQuantity: number;
-    version: string;
 }
 
 // POST /api/Products

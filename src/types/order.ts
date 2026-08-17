@@ -1,9 +1,27 @@
-﻿// @ts-ignore
-export enum OrderStatus {
-    Pending = 0,
-    Shipped = 1,
-    Delivered = 2,
-    Cancelled = 3,
+// The API serialises enums as strings (JsonStringEnumConverter), so status
+// arrives as "Pending" rather than 0.
+export type OrderStatus = 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
+
+export const ORDER_STATUSES: OrderStatus[] = [
+    'Pending',
+    'Shipped',
+    'Delivered',
+    'Cancelled',
+];
+
+export interface OrderItem {
+    productId: string;
+    quantity: number;
+    priceAtOrder: number;
+}
+
+export interface Order {
+    id: string;
+    customerName: string;
+    status: OrderStatus;
+    createdAt: string;
+    total: number;
+    items: OrderItem[];
 }
 
 export interface CreateOrderItemDto {
@@ -18,16 +36,4 @@ export interface CreateOrderDto {
 
 export interface UpdateOrderStatusDto {
     status: OrderStatus;
-}
-
-export interface Order {
-    id: string;
-    customerName: string;
-    status: OrderStatus;
-    items: OrderItem[];
-}
-
-export interface OrderItem {
-    productId: string;
-    quantity: number;
 }
