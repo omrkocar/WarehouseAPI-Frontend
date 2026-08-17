@@ -272,6 +272,12 @@ button.primary:hover:not(:disabled) {
   border-color: #fde68a;
 }
 
+.badge-paid {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-color: #c7d2fe;
+}
+
 .badge-shipped {
   background: #dbeafe;
   color: #1e40af;

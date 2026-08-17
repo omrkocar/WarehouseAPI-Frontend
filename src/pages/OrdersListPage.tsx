@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { money, shortDate } from '../api/format';
 import { useAuth } from '../auth/AuthContext';
-import { ORDER_STATUSES, type Order, type OrderStatus } from '../types/order';
+import { NEXT_STATUSES, type Order, type OrderStatus } from '../types/order';
 
 async function fetchOrders(): Promise<Order[]> {
     const response = await apiClient.get<Order[]>('/api/orders');
@@ -24,7 +24,7 @@ export default function OrdersListPage() {
             apiClient.put(`/api/orders/${id}/status`, { status }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['orders'] });
-            // Cancelling an order returns its stock, so the catalogue is stale too.
+            // Cancelling returns stock to the catalogue, so that list is stale too.
             queryClient.invalidateQueries({ queryKey: ['products'] });
         },
     });
@@ -54,43 +54,50 @@ export default function OrdersListPage() {
                         <th className="num">Items</th>
                         <th className="num">Total</th>
                         <th>Status</th>
+                        {isAdmin && <th>Advance to</th>}
                     </tr>
                 </thead>
                 <tbody>
-                    {data?.map((order) => (
-                        <tr key={order.id}>
-                            <td>{order.customerName}</td>
-                            <td className="muted">{shortDate(order.createdAt)}</td>
-                            <td className="num">
-                                {order.items.reduce((sum, item) => sum + item.quantity, 0)}
-                            </td>
-                            <td className="num">{money(order.total)}</td>
-                            <td>
-                                {isAdmin ? (
-                                    <select
-                                        value={order.status}
-                                        disabled={setStatus.isPending}
-                                        onChange={(e) =>
-                                            setStatus.mutate({
-                                                id: order.id,
-                                                status: e.target.value as OrderStatus,
-                                            })
-                                        }
-                                    >
-                                        {ORDER_STATUSES.map((status) => (
-                                            <option key={status} value={status}>
-                                                {status}
-                                            </option>
-                                        ))}
-                                    </select>
-                                ) : (
+                    {data?.map((order) => {
+                        const next = NEXT_STATUSES[order.status] ?? [];
+                        return (
+                            <tr key={order.id}>
+                                <td>{order.customerName}</td>
+                                <td className="muted">{shortDate(order.createdAt)}</td>
+                                <td className="num">
+                                    {order.items.reduce((sum, item) => sum + item.quantity, 0)}
+                                </td>
+                                <td className="num">{money(order.total)}</td>
+                                <td>
                                     <span className={`badge badge-${order.status.toLowerCase()}`}>
                                         {order.status}
                                     </span>
+                                </td>
+                                {isAdmin && (
+                                    <td>
+                                        {next.length === 0 ? (
+                                            <span className="muted small">Final</span>
+                                        ) : (
+                                            <div className="button-row">
+                                                {next.map((status) => (
+                                                    <button
+                                                        key={status}
+                                                        type="button"
+                                                        disabled={setStatus.isPending}
+                                                        onClick={() =>
+                                                            setStatus.mutate({ id: order.id, status })
+                                                        }
+                                                    >
+                                                        {status}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </td>
                                 )}
-                            </td>
-                        </tr>
-                    ))}
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
 

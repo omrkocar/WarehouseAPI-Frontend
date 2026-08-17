@@ -1,13 +1,21 @@
 // The API serialises enums as strings (JsonStringEnumConverter), so status
-// arrives as "Pending" rather than 0.
-export type OrderStatus = 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
+// arrives as "Pending" rather than 1.
+export type OrderStatus =
+    | 'Pending'
+    | 'Paid'
+    | 'Shipped'
+    | 'Delivered'
+    | 'Cancelled';
 
-export const ORDER_STATUSES: OrderStatus[] = [
-    'Pending',
-    'Shipped',
-    'Delivered',
-    'Cancelled',
-];
+// Mirrors Order.CanTransitionTo on the server. Anything not listed here is
+// rejected with a 400, so the UI only offers moves the API will accept.
+export const NEXT_STATUSES: Record<OrderStatus, OrderStatus[]> = {
+    Pending: ['Paid', 'Cancelled'],
+    Paid: ['Shipped', 'Cancelled'],
+    Shipped: ['Delivered'],
+    Delivered: [],
+    Cancelled: [],
+};
 
 export interface OrderItem {
     productId: string;
